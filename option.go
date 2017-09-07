@@ -31,14 +31,14 @@ func (opts *Options) usage() []byte {
 	buf := bytes.Buffer{}
 	fmt.Fprintf(&buf,
 		`glPget`+version+`
-	Usage: glPget [options] URL
+Usage: glPget [options] URL
 
-	Options:
-	-h, --help 			show this message
-	-v, --version		show the  version
-	-p,	--procs			set pararell downlods procs	
-	--trace				show stack trace
-	`)
+Options:
+-h, --help 			show this message
+-v, --version		show the  version
+-p,	--procs			set pararell downlods procs	
+--trace				show stack trace
+`)
 
 	return buf.Bytes()
 }

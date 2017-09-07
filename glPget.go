@@ -71,7 +71,7 @@ func (glp glPget) makeIgnoreError() ignoreError {
 func (glp *glPget) prepare(argv []string) error {
 
 	if err := glp.parseOptions(&glp.Options, argv); err != nil {
-		return errors.Wrap(err, "faild to parse command line args")
+		return glp.ErrTop(err)
 	}
 
 	return nil

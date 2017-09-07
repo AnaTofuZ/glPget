@@ -45,6 +45,22 @@ func (glp *glPget) Run() error {
 	return nil
 }
 
+// usage時などにエラー表示させないようにする関数
+func (glp *glPget) ErrTop(err error) error {
+	for e := err; e != nil; {
+		switch e.(type) {
+		case *ignoreError:
+			fmt.Println(e)
+			return nil
+		case causer:
+			e = e.(causer).Cause()
+		default:
+			return e
+		}
+	}
+	return nil
+}
+
 // ignoreがErrorを持つように定義する
 func (i *ignoreError) Error() string {
 	return fmt.Sprintf("%s", i.Msg)
@@ -53,8 +69,7 @@ func (i *ignoreError) Error() string {
 func (glp *glPget) prepare(argv []string) error {
 
 	if err := glp.parseOptions(&glp.Options, argv); err != nil {
-		fmt.Println(err)
-		return nil
+		return glp.ErrTop(err)
 	}
 
 	return nil

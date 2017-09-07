@@ -17,8 +17,7 @@ const (
 type glPget struct {
 	Options
 
-	args []string
-	URL  string
+	URL string
 }
 
 // 純粋なerrorを取ってくるインターフェイス
@@ -46,7 +45,7 @@ func (glp *glPget) Run() error {
 }
 
 // usage時などにエラー表示させないようにする関数
-func (glp glPget) ErrTop(err error) error {
+func (glp *glPget) ErrTop(err error) error {
 	for e := err; e != nil; {
 		switch e.(type) {
 		case ignoreError:
@@ -65,7 +64,7 @@ func (i ignoreError) Error() string {
 	return i.err.Error()
 }
 
-func (glp glPget) makeIgnoreError() ignoreError {
+func (glp *glPget) makeIgnoreError() ignoreError {
 	return ignoreError{
 		err: errors.New("this is ignore error message"),
 	}
@@ -100,29 +99,29 @@ func (glp *glPget) parseOptions(opts *Options, argv []string) error {
 		opts.Procs = runtime.NumCPU()
 	}
 
-	if err := glp.setURL(); err != nil {
+	if err := glp.setURL(o); err != nil {
 		return errors.Wrap(err, "url is not found")
 	}
 
-	glp.args = o
 	return nil
 }
 
-func (glp glPget) showHelp() ignoreError {
+func (glp *glPget) showHelp() ignoreError {
 	os.Stdout.Write(glp.Options.usage())
 	return glp.makeIgnoreError()
 }
 
-func (glp glPget) showVersion() ignoreError {
+func (glp *glPget) showVersion() ignoreError {
 	os.Stdout.Write([]byte("glpget version" + version + "\n"))
 	return glp.makeIgnoreError()
 }
 
-func (glp *glPget) setURL() error {
+func (glp *glPget) setURL(args []string) error {
 
-	for _, argv := range glp.args {
+	for _, argv := range args {
 		if govalidator.IsURL(argv) {
 			glp.URL = argv
+			break
 		}
 	}
 

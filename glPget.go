@@ -84,11 +84,19 @@ func (glp *glPget) parseOptions(opts *Options, argv []string) error {
 		return exit.MakeDataErr(err)
 	}
 
+	if len(o) == 0 {
+		return glp.showHelp(opts)
+	}
+
 	if opts.Help {
-		os.Stdout.Write(opts.usage())
-		return glp.makeIgnoreError()
+		return glp.showHelp(opts)
 	}
 
 	glp.args = o
 	return nil
+}
+
+func (glp glPget) showHelp(opts *Options) ignoreError {
+	os.Stdout.Write(opts.usage())
+	return glp.makeIgnoreError()
 }

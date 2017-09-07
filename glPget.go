@@ -1,6 +1,7 @@
 package glPget
 
 import (
+	"fmt"
 	"os"
 	"runtime"
 
@@ -28,7 +29,7 @@ type causer interface {
 }
 
 type ignoreError struct {
-	err error
+	Msg []byte
 }
 
 func New() *glPget {
@@ -44,36 +45,16 @@ func (glp *glPget) Run() error {
 	return nil
 }
 
-// usage時などにエラー表示させないようにする関数
-func (glp *glPget) ErrTop(err error) error {
-	for e := err; e != nil; {
-		switch e.(type) {
-		case *ignoreError:
-			return nil
-		case causer:
-			e = e.(causer).Cause()
-		default:
-			return e
-		}
-	}
-	return nil
-}
-
 // ignoreがErrorを持つように定義する
 func (i *ignoreError) Error() string {
-	return i.err.Error()
-}
-
-func (glp *glPget) makeIgnoreError() *ignoreError {
-	return &ignoreError{
-		err: errors.New("this is ignore error message"),
-	}
+	return fmt.Sprintf("%s", i.Msg)
 }
 
 func (glp *glPget) prepare(argv []string) error {
 
 	if err := glp.parseOptions(&glp.Options, argv); err != nil {
-		return glp.ErrTop(err)
+		fmt.Println(err)
+		return nil
 	}
 
 	return nil
@@ -106,14 +87,12 @@ func (glp *glPget) parseOptions(opts *Options, argv []string) error {
 	return nil
 }
 
-func (glp *glPget) showHelp() *ignoreError {
-	os.Stdout.Write(glp.Options.usage())
-	return glp.makeIgnoreError()
+func (glp *glPget) showHelp() error {
+	return &ignoreError{Msg: glp.Options.usage()}
 }
 
-func (glp *glPget) showVersion() *ignoreError {
-	os.Stdout.Write([]byte("glpget version" + version + "\n"))
-	return glp.makeIgnoreError()
+func (glp *glPget) showVersion() error {
+	return &ignoreError{Msg: []byte("glpget version" + version + "\n")}
 }
 
 func (glp *glPget) setURL(args []string) error {

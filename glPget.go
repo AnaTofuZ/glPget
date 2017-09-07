@@ -1,9 +1,10 @@
 package glPget
 
 import (
-	"fmt"
 	"os"
 	"runtime"
+
+	"github.com/asaskevich/govalidator"
 
 	"github.com/Code-Hex/exit"
 	"github.com/pkg/errors"
@@ -17,7 +18,7 @@ type glPget struct {
 	Options
 
 	args []string
-	URL  []string
+	URL  string
 }
 
 // 純粋なerrorを取ってくるインターフェイス
@@ -41,7 +42,6 @@ func (glp *glPget) Run() error {
 	if err != nil {
 		return errors.Wrap(err, "stoping run")
 	}
-	fmt.Println(glp.Procs)
 	return nil
 }
 
@@ -87,12 +87,8 @@ func (glp *glPget) parseOptions(opts *Options, argv []string) error {
 		return exit.MakeDataErr(err)
 	}
 
-	if len(o) == 0 {
-		return glp.showHelp(opts)
-	}
-
-	if opts.Help {
-		return glp.showHelp(opts)
+	if len(o) == 0 || opts.Help {
+		return glp.showHelp()
 	}
 
 	// set default procs
@@ -100,11 +96,30 @@ func (glp *glPget) parseOptions(opts *Options, argv []string) error {
 		opts.Procs = runtime.NumCPU()
 	}
 
+	if err := glp.setURL(); err != nil {
+		return errors.Wrap(err, "url is not found")
+	}
+
 	glp.args = o
 	return nil
 }
 
-func (glp glPget) showHelp(opts *Options) ignoreError {
-	os.Stdout.Write(opts.usage())
+func (glp glPget) showHelp() ignoreError {
+	os.Stdout.Write(glp.Options.usage())
 	return glp.makeIgnoreError()
+}
+
+func (glp *glPget) setURL() error {
+
+	for _, argv := range glp.args {
+		if govalidator.IsURL(argv) {
+			glp.URL = argv
+		}
+	}
+
+	if len(glp.URL) < 1 {
+		return errors.New("urls not found")
+	}
+
+	return nil
 }

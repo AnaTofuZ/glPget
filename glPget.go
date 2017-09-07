@@ -87,6 +87,10 @@ func (glp *glPget) parseOptions(opts *Options, argv []string) error {
 		return exit.MakeDataErr(err)
 	}
 
+	if opts.Version {
+		return glp.showVersion()
+	}
+
 	if len(o) == 0 || opts.Help {
 		return glp.showHelp()
 	}
@@ -106,6 +110,11 @@ func (glp *glPget) parseOptions(opts *Options, argv []string) error {
 
 func (glp glPget) showHelp() ignoreError {
 	os.Stdout.Write(glp.Options.usage())
+	return glp.makeIgnoreError()
+}
+
+func (glp glPget) showVersion() ignoreError {
+	os.Stdout.Write([]byte("glpget version" + version + "\n"))
 	return glp.makeIgnoreError()
 }
 

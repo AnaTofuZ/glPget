@@ -1,7 +1,6 @@
 package glPget
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/Code-Hex/exit"
@@ -21,17 +20,15 @@ type glPget struct {
 
 func New() *glPget {
 
-	fmt.Println("hoge")
 	return &glPget{}
 }
 
-func (glp *glPget) Run() {
-	//	arg, err := glp.parseOptions(&glp.Options, os.Args[1:])
+func (glp *glPget) Run() error {
 	err := glp.prepare(os.Args[1:])
 	if err != nil {
 		return errors.Wrap(err, "stoping run")
 	}
-	fmt.Println(glp.args)
+	return nil
 }
 
 func (glp *glPget) prepare(argv []string) error {
@@ -52,6 +49,10 @@ func (glp *glPget) parseOptions(opts *Options, argv []string) error {
 
 	if err != nil {
 		return exit.MakeDataErr(err)
+	}
+
+	if opts.Help {
+		os.Stdout.Write(opts.usage())
 	}
 
 	glp.args = o

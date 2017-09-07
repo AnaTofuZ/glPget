@@ -14,7 +14,7 @@ type Options struct {
 	Version bool `short:"v" long:"version" description:"show the version"`
 
 	Trace bool `long:"trace" description:"show stack trace"`
-	Procs int  `short:"p" long:"procs" description:"set pararell downlods procs" default:"runtime.NumCPU()"`
+	Procs int  `short:"p" long:"procs" description:"set pararell downlods procs"`
 }
 
 func (opts *Options) parse(argv []string) ([]string, error) {

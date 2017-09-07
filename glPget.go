@@ -1,7 +1,9 @@
 package glPget
 
 import (
+	"fmt"
 	"os"
+	"runtime"
 
 	"github.com/Code-Hex/exit"
 	"github.com/pkg/errors"
@@ -39,6 +41,7 @@ func (glp *glPget) Run() error {
 	if err != nil {
 		return errors.Wrap(err, "stoping run")
 	}
+	fmt.Println(glp.Procs)
 	return nil
 }
 
@@ -90,6 +93,11 @@ func (glp *glPget) parseOptions(opts *Options, argv []string) error {
 
 	if opts.Help {
 		return glp.showHelp(opts)
+	}
+
+	// set default procs
+	if opts.Procs == 0 {
+		opts.Procs = runtime.NumCPU()
 	}
 
 	glp.args = o

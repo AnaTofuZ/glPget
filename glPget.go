@@ -21,55 +21,36 @@ type glPget struct {
 	URL string
 }
 
-// 純粋なerrorを取ってくるインターフェイス
-// http://deeeet.com/writing/2016/04/25/go-pkg-errors/ を参照
-
-type causer interface {
-	Cause() error
-}
-
-type ignoreError struct {
-	Msg []byte
-}
-
 func New() *glPget {
 
 	return &glPget{}
 }
 
-func (glp *glPget) Run() error {
+func (glp *glPget) Run() int {
+	if e := glp.run(); e != nil {
+		exitCode, err := glp.ErrTrap(e)
+		if glp.Trace {
+			fmt.Fprintf(os.Stderr, "Error:%+v\n", e)
+		} else {
+			fmt.Fprintf(os.Stderr, "Error:%v\n", err)
+		}
+		return exitCode
+	}
+	return 0
+}
+
+func (glp *glPget) run() error {
 	err := glp.prepare(os.Args[1:])
 	if err != nil {
-		return errors.Wrap(err, "stoping run")
+		return err
 	}
 	return nil
-}
-
-// usage時などにエラー表示させないようにする関数
-func (glp *glPget) ErrTop(err error) error {
-	for e := err; e != nil; {
-		switch e.(type) {
-		case *ignoreError:
-			fmt.Println(e)
-			return nil
-		case causer:
-			e = e.(causer).Cause()
-		default:
-			return e
-		}
-	}
-	return nil
-}
-
-// ignoreがErrorを持つように定義する
-func (i *ignoreError) Error() string {
-	return fmt.Sprintf("%s", i.Msg)
 }
 
 func (glp *glPget) prepare(argv []string) error {
 
 	if err := glp.parseOptions(&glp.Options, argv); err != nil {
-		return glp.ErrTop(err)
+		return errors.Wrap(err, "faild to parse")
 	}
 
 	return nil
@@ -83,11 +64,17 @@ func (glp *glPget) parseOptions(opts *Options, argv []string) error {
 	}
 
 	if opts.Version {
-		return glp.showVersion()
+		os.Stdout.Write([]byte("glpget version" + version + "\n"))
+		os.Exit(0)
 	}
 
-	if len(o) == 0 || opts.Help {
-		return glp.showHelp()
+	if opts.Help {
+		os.Stdout.Write(opts.usage())
+		os.Exit(0)
+	}
+
+	if len(o) == 0 {
+		return exit.MakeUsage(errors.New(string(opts.usage())))
 	}
 
 	// set default procs
@@ -100,14 +87,6 @@ func (glp *glPget) parseOptions(opts *Options, argv []string) error {
 	}
 
 	return nil
-}
-
-func (glp *glPget) showHelp() error {
-	return &ignoreError{Msg: glp.Options.usage()}
-}
-
-func (glp *glPget) showVersion() error {
-	return &ignoreError{Msg: []byte("glpget version" + version + "\n")}
 }
 
 func (glp *glPget) setURL(args []string) error {

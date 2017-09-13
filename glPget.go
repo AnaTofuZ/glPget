@@ -21,8 +21,8 @@ type glPget struct {
 	URL string
 }
 
+// New glpget struct
 func New() *glPget {
-
 	return &glPget{}
 }
 
@@ -40,10 +40,14 @@ func (glp *glPget) Run() int {
 }
 
 func (glp *glPget) run() error {
-	err := glp.prepare(os.Args[1:])
-	if err != nil {
-		return err
+	if err := glp.prepare(os.Args[1:]); err != nil {
+		return errors.Wrap(err, "faild to prepare")
 	}
+
+	if err := glp.CheckSetupURL(); err != nil {
+		return errors.Wrap(err, "faild to check setup url")
+	}
+
 	return nil
 }
 

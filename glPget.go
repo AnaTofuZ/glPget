@@ -41,11 +41,11 @@ func (glp *glPget) Run() int {
 
 func (glp *glPget) run() error {
 	if err := glp.prepare(os.Args[1:]); err != nil {
-		return err
+		return errors.Wrap(err, "faild to prepare")
 	}
 
 	if err := glp.CheckSetupURL(); err != nil {
-		return err
+		return errors.Wrap(err, "faild to check setup url")
 	}
 
 	return nil

@@ -17,7 +17,7 @@ func (glp *glPget) CheckSetupURL() error {
 	res, err := client.Head(glp.URL)
 
 	if err != nil {
-		return errors.New("can't http requests")
+		return errors.Wrap(err, "cant't http requests")
 	}
 
 	if res.Header.Get("Accept-Ranges") != "bytes" {
